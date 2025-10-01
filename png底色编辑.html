@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNG图片底色添加工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .color-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-input {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .preset-colors {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-color {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .preset-color:hover {
+            transform: scale(1.1);
+            border-color: #667eea;
+        }
+
+        .canvas-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .canvas-container {
+            display: inline-block;
+            border: 2px dashed #ddd;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f9f9f9;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .canvas-container.has-image {
+            border-style: solid;
+            border-color: #667eea;
+            background: white;
+        }
+
+        #canvas {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .placeholder {
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .download-section {
+            text-align: center;
+        }
+
+        .download-button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .download-button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .download-button.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(17, 153, 142, 0.3);
+        }
+
+        .info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .color-section {
+                flex-direction: column;
+            }
+            
+            .preset-colors {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 PNG底色添加工具</h1>
+            <p>为您的PNG图片添加自定义底色</p>
+        </div>
+        
+        <div class="content">
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageInput" class="file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp">
+                    <label for="imageInput" class="file-input-button">
+                        📁 选择图片文件
+                    </label>
+                </div>
+                <div class="info">
+                    <strong>支持格式：</strong> PNG
+                </div>
+            </div>
+
+            <div class="color-section">
+                <div class="color-input-wrapper">
+                    <label for="colorPicker">选择底色：</label>
+                    <input type="color" id="colorPicker" class="color-input" value="#ffffff">
+                </div>
+                
+                <div class="preset-colors">
+                    <div class="preset-color" style="background-color: #ffffff" data-color="#ffffff" title="白色"></div>
+                    <div class="preset-color" style="background-color: #000000" data-color="#000000" title="黑色"></div>
+                    <div class="preset-color" style="background-color: #ff0000" data-color="#ff0000" title="红色"></div>
+                    <div class="preset-color" style="background-color: #00ff00" data-color="#00ff00" title="绿色"></div>
+                    <div class="preset-color" style="background-color: #0000ff" data-color="#0000ff" title="蓝色"></div>
+                    <div class="preset-color" style="background-color: #ffff00" data-color="#ffff00" title="黄色"></div>
+                    <div class="preset-color" style="background-color: #ff00ff" data-color="#ff00ff" title="紫色"></div>
+                    <div class="preset-color" style="background-color: #00ffff" data-color="#00ffff" title="青色"></div>
+                </div>
+            </div>
+
+            <div class="canvas-section">
+                <div class="canvas-container" id="canvasContainer">
+                    <div class="placeholder">请先选择一张图片</div>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <button id="downloadButton" class="download-button">
+                    💾 下载处理后的图片
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PNGBackgroundEditor {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.imageInput = document.getElementById('imageInput');
+                this.colorPicker = document.getElementById('colorPicker');
+                this.downloadButton = document.getElementById('downloadButton');
+                this.canvasContainer = document.getElementById('canvasContainer');
+                this.placeholder = document.querySelector('.placeholder');
+                
+                this.originalImage = null;
+                this.currentBackgroundColor = '#ffffff';
+                
+                this.initEventListeners();
+            }
+
+            initEventListeners() {
+                // 文件选择事件
+                this.imageInput.addEventListener('change', (e) => {
+                    this.handleImageUpload(e);
+                });
+
+                // 颜色选择事件
+                this.colorPicker.addEventListener('change', (e) => {
+                    this.currentBackgroundColor = e.target.value;
+                    this.applyBackground();
+                });
+
+                // 预设颜色点击事件
+                document.querySelectorAll('.preset-color').forEach(colorDiv => {
+                    colorDiv.addEventListener('click', () => {
+                        const color = colorDiv.dataset.color;
+                        this.currentBackgroundColor = color;
+                        this.colorPicker.value = color;
+                        this.applyBackground();
+                    });
+                });
+
+                // 下载按钮事件
+                this.downloadButton.addEventListener('click', () => {
+                    this.downloadImage();
+                });
+            }
+
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.originalImage = img;
+                        this.setupCanvas();
+                        this.applyBackground();
+                        this.showCanvas();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            setupCanvas() {
+                if (!this.originalImage) return;
+
+                // 设置画布尺寸
+                this.canvas.width = this.originalImage.width;
+                this.canvas.height = this.originalImage.height;
+
+                // 设置显示尺寸（保持比例）
+                const maxDisplayWidth = 600;
+                const maxDisplayHeight = 400;
+                const aspectRatio = this.originalImage.width / this.originalImage.height;
+
+                let displayWidth = this.originalImage.width;
+                let displayHeight = this.originalImage.height;
+
+                if (displayWidth > maxDisplayWidth) {
+                    displayWidth = maxDisplayWidth;
+                    displayHeight = displayWidth / aspectRatio;
+                }
+
+                if (displayHeight > maxDisplayHeight) {
+                    displayHeight = maxDisplayHeight;
+                    displayWidth = displayHeight * aspectRatio;
+                }
+
+                this.canvas.style.width = displayWidth + 'px';
+                this.canvas.style.height = displayHeight + 'px';
+            }
+
+            applyBackground() {
+                if (!this.originalImage) return;
+
+                // 清空画布
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 填充背景色
+                this.ctx.fillStyle = this.currentBackgroundColor;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 绘制原图
+                this.ctx.drawImage(this.originalImage, 0, 0);
+
+                // 启用下载按钮
+                this.downloadButton.classList.add('active');
+            }
+
+            showCanvas() {
+                this.placeholder.style.display = 'none';
+                this.canvas.style.display = 'block';
+                this.canvasContainer.classList.add('has-image');
+            }
+
+            downloadImage() {
+                if (!this.originalImage) return;
+
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = 'image_with_background.png';
+                link.href = this.canvas.toDataURL('image/png');
+                
+                // 触发下载
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new PNGBackgroundEditor();
+        });
+    </script>
+</body>
+</html>
